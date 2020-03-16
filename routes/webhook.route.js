@@ -1,7 +1,6 @@
-const express = require("express");
-const webhookController = require("./controllers/webhook.controller");
-const router = express.router();
+"use strict";
+module.exports = function(app) {
+  const webhookController = require("./controllers/webhook.controller");
 
-router.get("/webhook", webhookController.verifyWebhook);
-
-module.exports = router;
+  app.route("/webhook").get(webhookController.verifyWebhook);
+};

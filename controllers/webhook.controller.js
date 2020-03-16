@@ -1,4 +1,4 @@
-const verifyWebHook = async (req, res, next) => {
+const verifyWebhook = async (req, res, next) => {
   try {
     const mode = req.query["hub.mode"];
     const challenge = req.query["hub.challenge"];
