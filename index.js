@@ -11,9 +11,12 @@ const express = require("express"),
     .use(bodyParser.urlencoded({ extended: true }))
     .use(cors);
 
+const webhookRoutes = require("./routes/webhook.route");
+webhookRoutes(app);
+
 app.listen(port, () =>
   console.log(
-    `⚡️[BOT CONSILIO] Express server is listening on port %d in %s mode`,
+    `⚡️[BOT CONSILIO] Express server is listening on port %d in %s mode.`,
     port,
     app.settings.env
   )
