@@ -5,7 +5,7 @@ const verifyWebhook = async (req, res, next) => {
     const token = req.query["hub.verify_token"];
 
     if (mode && token) {
-      if (mode === "subscribe" && token === process.env.VERIFYTOKEN) {
+      if (mode === "subscribe" && token === process.env.VERIFY_TOKEN) {
         console.log("⚡️[BOT CONSILIO] Verify token passed.");
         res.status(200).send(challenge);
       } else {
