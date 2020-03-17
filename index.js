@@ -9,7 +9,8 @@ const express = require("express"),
   app = express()
     .use(bodyParser.json())
     .use(bodyParser.urlencoded({ extended: true }))
-    .use(cors);
+    .use(cors)
+    .use(express.static(__dirname + "/static"));
 
 const webhookRoutes = require("./routes/webhook.route");
 webhookRoutes(app);
