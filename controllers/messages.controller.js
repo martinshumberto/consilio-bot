@@ -1,5 +1,4 @@
 require("dotenv").config();
-const uuid = require("uuid");
 import dialogflow from "dialogflow";
 import messagesHelper from "../helpers/messages.helper";
 
@@ -12,20 +11,12 @@ const config = {
 
 const sessionClient = new dialogflow.SessionsClient(config);
 
-const sessionIds = new Map();
-
-function setSessionandUser(senderID) {
-  if (!sessionIds.has(senderID)) {
-    sessionIds.set(senderID, uuid.v4());
-  }
-}
-
 const sendToDialogFlow = async (sender, textString, params) => {
   messagesHelper.sendTypingOn(sender);
 
   const sessionPath = sessionClient.sessionPath(
     process.env.DIALOGFLOW_PROJECT_ID,
-    sessionIds.get(sender)
+    messagesHelper.sessionIds.get(sender)
   );
 
   try {
@@ -71,7 +62,7 @@ const receivedMessage = event => {
   var timeOfMessage = event.timestamp;
   var message = event.message;
 
-  setSessionandUser(senderID);
+  messagesHelper.setSessionandUser(senderID);
   console.log(
     "Received message for user %d and page %d at %d with message:",
     senderID,
@@ -99,7 +90,6 @@ const receivedMessage = event => {
   }
 
   if (messageText) {
-    //send message to api.ai
     sendToDialogFlow(senderID, messageText);
   } else if (messageAttachments) {
     messagesHelper.handleMessageAttachments(messageAttachments, senderID);
@@ -111,7 +101,7 @@ function receivedPostback(event) {
   var recipientID = event.recipient.id;
   var timeOfPostback = event.timestamp;
 
-  setSessionandUser(senderID);
+  messagesHelper.setSessionandUser(senderID);
 
   var payload = event.postback.payload;
 
@@ -133,7 +123,7 @@ function receivedPostback(event) {
             payload: "menu"
           }
         ];
-        sendQuickReply(
+        messagesHelper.sendQuickReply(
           senderID,
           "What would you like to do next?",
           quickReplies

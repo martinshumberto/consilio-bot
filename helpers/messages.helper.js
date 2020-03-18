@@ -1,44 +1,8 @@
 require("dotenv").config();
+const uuid = require("uuid");
 import request from "request";
-
-function callSendAPI(messageData) {
-  request(
-    {
-      uri: "https://graph.facebook.com/v3.2/me/messages",
-      qs: {
-        access_token: process.env.PAGE_ACCESS_TOKEN
-      },
-      method: "POST",
-      json: messageData
-    },
-    function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        let recipientId = body.recipient_id;
-        let messageId = body.message_id;
-
-        if (messageId) {
-          console.log(
-            "⚡️ [BOT CONSILIO] Successfully sent message with id %s to recipient %s",
-            messageId,
-            recipientId
-          );
-        } else {
-          console.log(
-            "⚡️ [BOT CONSILIO] Successfully called Send API for recipient %s",
-            recipientId
-          );
-        }
-      } else {
-        console.error(
-          "❌ [BOT CONSILIO] Failed calling Send API",
-          response.statusCode,
-          response.statusMessage,
-          body.error
-        );
-      }
-    }
-  );
-}
+import userService from "../services/user.service";
+import messageService from "../services/message.service";
 
 function sendTypingOn(recipientId) {
   var messageData = {
@@ -48,7 +12,7 @@ function sendTypingOn(recipientId) {
     sender_action: "typing_on"
   };
 
-  callSendAPI(messageData);
+  messageService.sendCall(messageData);
 }
 
 function sendTypingOff(recipientId) {
@@ -59,7 +23,7 @@ function sendTypingOff(recipientId) {
     sender_action: "typing_off"
   };
 
-  callSendAPI(messageData);
+  messageService.sendCall(messageData);
 }
 
 function sendTextMessage(recipientId, text) {
@@ -71,7 +35,22 @@ function sendTextMessage(recipientId, text) {
       text: text
     }
   };
-  callSendAPI(messageData);
+  messageService.sendCall(messageData);
+}
+
+function sendQuickReply(recipientId, text, replies, metadata) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: text,
+      metadata: isDefined(metadata) ? metadata : "",
+      quick_replies: replies
+    }
+  };
+
+  messageService.sendCall(messageData);
 }
 
 function handleCardMessages(messages, sender) {
@@ -125,7 +104,7 @@ function sendGenericMessage(recipientId, elements) {
       }
     }
   };
-  callSendAPI(messageData);
+  messageService.sendCall(messageData);
 }
 
 function handleMessages(messages, sender) {
@@ -229,6 +208,15 @@ function handleDialogFlowAction(
   parameters
 ) {
   switch (action) {
+    case "input.welcome":
+      let user = usersMap.get(sender);
+      sendTypingOn(sender);
+      sendTextMessage(sender, "Olá " + user.first_name + "!");
+      setTimeout(function() {
+        handleMessages(messages, sender);
+      }, 500);
+      break;
+
     default:
       handleMessages(messages, sender);
   }
@@ -246,12 +234,11 @@ function handleEcho(messageId, appId, metadata) {
 
 let username = "";
 function greetUserText(userId) {
-  //first read user firstname
   request(
     {
       uri: "https://graph.facebook.com/v3.2/" + userId,
       qs: {
-        access_token: config.FB_PAGE_TOKEN
+        access_token: process.env.PAGE_ACCESS_TOKEN
       }
     },
     function(error, response, body) {
@@ -270,7 +257,10 @@ function greetUserText(userId) {
               "What can I help you with?"
           );
         } else {
-          console.log("Cannot get data for fb user with id", userId);
+          console.log(
+            "❌ [BOT CONSILIO] Cannot get data for fb user with id",
+            userId
+          );
         }
       } else {
         console.error(response.error);
@@ -280,7 +270,7 @@ function greetUserText(userId) {
 }
 
 function handleMessageAttachments(messageAttachments, senderID) {
-  sendTextMessage(senderID, "Attachment received. Thank you.");
+  sendTextMessage(senderID, "Anexo recebido. Obrigado.");
 }
 
 function isDefined(obj) {
@@ -295,11 +285,25 @@ function isDefined(obj) {
   return obj != null;
 }
 
+const sessionIds = new Map();
+const usersMap = new Map();
+
+function setSessionandUser(senderID) {
+  if (!sessionIds.has(senderID)) {
+    sessionIds.set(senderID, uuid.v4());
+  }
+  if (!usersMap.has(senderID)) {
+    userService.addUser(function(user) {
+      usersMap.set(senderID, user);
+    }, senderID);
+  }
+}
+
 export default {
-  callSendAPI,
   sendTypingOn,
   sendTypingOff,
   sendTextMessage,
+  sendQuickReply,
   handleCardMessages,
   sendGenericMessage,
   handleMessages,
@@ -307,5 +311,8 @@ export default {
   handleDialogFlowAction,
   handleMessageAttachments,
   handleEcho,
-  greetUserText
+  greetUserText,
+  setSessionandUser,
+  sessionIds,
+  usersMap
 };
