@@ -5,6 +5,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "./config/cors";
 import webhookRoutes from "./routes/webhook.route";
+import request from "request";
 
 if (!process.env.PORT) {
   throw new Error("missing PORT");
@@ -42,12 +43,34 @@ webhookRoutes(app);
 
 app.listen(port, () =>
   console.log(
-    `⚡️[BOT CONSILIO] Express server is listening on port %d in %s mode.`,
+    `⚡️ [BOT CONSILIO] Express server is listening on port %d in %s mode.`,
     port,
     app.settings.env
   )
 );
 
+const URL =
+  "https://graph.facebook.com/v2.11/me?fields=id&access_token=" +
+  process.env.PAGE_ACCESS_TOKEN;
 app.get("/", (req, res) => {
-  res.send("⚡️[BOT CONSILIO] Hello world!");
+  request(URL, (error, response, body) => {
+    const page = JSON.parse(body);
+    res.end(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <title>BOT CONSILIO</title>
+            </head>
+            <body>
+                <div style="font-family: sans-serif;">
+                    <h1>BOT MESSENGER INTEGRATE DIALOGFLOW</h1>
+                    <ul>
+                        <li>Go chat at <a href="https://m.me/${page.id}" target="_blank">m.me/${page.id}</a></li>
+                        <li>Webhook URL: https://${req.headers.host}/webhook</li>
+                        <li>Verify token: ${process.env.VERIFY_TOKEN}</li>
+                    <ul/>
+                </div>
+            </body>
+            </html>`);
+  });
 });
