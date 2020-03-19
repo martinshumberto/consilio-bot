@@ -1,9 +1,12 @@
 require("dotenv").config();
 const uuid = require("uuid");
-import request from "request";
 import userService from "../services/user.service";
 import messageService from "../services/message.service";
 
+/**
+ * Send action typing on using the Service API.
+ * @param {*} recipientId
+ */
 function sendTypingOn(recipientId) {
   var messageData = {
     recipient: {
@@ -15,6 +18,10 @@ function sendTypingOn(recipientId) {
   messageService.sendCall(messageData);
 }
 
+/**
+ * Send action typing off using the Service API.
+ * @param {*} recipientId
+ */
 function sendTypingOff(recipientId) {
   var messageData = {
     recipient: {
@@ -26,6 +33,11 @@ function sendTypingOff(recipientId) {
   messageService.sendCall(messageData);
 }
 
+/**
+ * Send type text message using the Service API.
+ * @param {*} recipientId
+ * @param {*} text
+ */
 function sendTextMessage(recipientId, text) {
   var messageData = {
     recipient: {
@@ -38,6 +50,11 @@ function sendTextMessage(recipientId, text) {
   messageService.sendCall(messageData);
 }
 
+/**
+ * Send type quick reply message using the Service API.
+ * @param {*} recipientId
+ * @param {*} text
+ */
 function sendQuickReply(recipientId, text, replies, metadata) {
   var messageData = {
     recipient: {
@@ -53,6 +70,34 @@ function sendQuickReply(recipientId, text, replies, metadata) {
   messageService.sendCall(messageData);
 }
 
+/**
+ * Send type template generic message using the Service API.
+ * @param {*} recipientId
+ * @param {*} elements
+ */
+function sendGenericMessage(recipientId, elements) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: elements
+        }
+      }
+    }
+  };
+  messageService.sendCall(messageData);
+}
+
+/**
+ * Process message type card
+ * @param {*} messages
+ * @param {*} sender
+ */
 function handleCardMessages(messages, sender) {
   let elements = [];
   for (var m = 0; m < messages.length; m++) {
@@ -89,24 +134,11 @@ function handleCardMessages(messages, sender) {
   sendGenericMessage(sender, elements);
 }
 
-function sendGenericMessage(recipientId, elements) {
-  var messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      attachment: {
-        type: "template",
-        payload: {
-          template_type: "generic",
-          elements: elements
-        }
-      }
-    }
-  };
-  messageService.sendCall(messageData);
-}
-
+/**
+ * Process messages
+ * @param {*} messages
+ * @param {*} sender
+ */
 function handleMessages(messages, sender) {
   let timeoutInterval = 1100;
   let previousType;
@@ -138,6 +170,11 @@ function handleMessages(messages, sender) {
   }
 }
 
+/**
+ * Process single message
+ * @param {*} message
+ * @param {*} sender
+ */
 function handleMessage(message, sender) {
   switch (message.message) {
     case "text": //text
@@ -165,6 +202,20 @@ function handleMessage(message, sender) {
   }
 }
 
+/**
+ * Process attachments
+ * @param {*} messageAttachments
+ * @param {*} senderID
+ */
+function handleMessageAttachments(messageAttachments, senderID) {
+  sendTextMessage(senderID, "Anexo recebido. Obrigado.");
+}
+
+/**
+ * Process Dialogflow response
+ * @param {*} sender
+ * @param {*} response
+ */
 function handleDialogFlowResponse(sender, response) {
   let responseText = response.fulfillmentMessages.fulfillmentText;
 
@@ -200,6 +251,14 @@ function handleDialogFlowResponse(sender, response) {
   }
 }
 
+/**
+ * Process Dialogflow actions
+ * @param {*} sender
+ * @param {*} action
+ * @param {*} messages
+ * @param {*} contexts
+ * @param {*} parameters
+ */
 function handleDialogFlowAction(
   sender,
   action,
@@ -214,7 +273,7 @@ function handleDialogFlowAction(
       sendTextMessage(sender, "Olá " + user.first_name + "!");
       setTimeout(function() {
         handleMessages(messages, sender);
-      }, 500);
+      }, 1000);
       break;
 
     default:
@@ -222,8 +281,13 @@ function handleDialogFlowAction(
   }
 }
 
+/**
+ * Just logging message echoes to console
+ * @param {*} messageId
+ * @param {*} appId
+ * @param {*} metadata
+ */
 function handleEcho(messageId, appId, metadata) {
-  // Just logging message echoes to console
   console.log(
     "❌ [BOT CONSILIO] Received echo for message %s and app %d with metadata %s",
     messageId,
@@ -232,59 +296,24 @@ function handleEcho(messageId, appId, metadata) {
   );
 }
 
-let username = "";
-function greetUserText(userId) {
-  request(
-    {
-      uri: "https://graph.facebook.com/v3.2/" + userId,
-      qs: {
-        access_token: process.env.PAGE_ACCESS_TOKEN
-      }
-    },
-    function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        var user = JSON.parse(body);
-        console.log("getUserData: " + user);
-        if (user.first_name) {
-          console.log("FB user: %s %s", user.first_name, user.last_name);
-          username = user.first_name + user.last_name;
-          sendTextMessage(
-            userId,
-            "Welcome " +
-              user.first_name +
-              "! " +
-              "I can answer frequently asked questions for you " +
-              "What can I help you with?"
-          );
-        } else {
-          console.log(
-            "❌ [BOT CONSILIO] Cannot get data for fb user with id",
-            userId
-          );
-        }
-      } else {
-        console.error(response.error);
-      }
-    }
-  );
-}
-
-function handleMessageAttachments(messageAttachments, senderID) {
-  sendTextMessage(senderID, "Anexo recebido. Obrigado.");
-}
-
+/**
+ * Define is undefined
+ * @param {*} obj
+ */
 function isDefined(obj) {
   if (typeof obj == "undefined") {
     return false;
   }
-
   if (!obj) {
     return false;
   }
-
   return obj != null;
 }
 
+/**
+ * Set userid
+ * @param {*} senderID
+ */
 const sessionIds = new Map();
 const usersMap = new Map();
 
@@ -304,14 +333,13 @@ export default {
   sendTypingOff,
   sendTextMessage,
   sendQuickReply,
-  handleCardMessages,
   sendGenericMessage,
+  handleCardMessages,
   handleMessages,
   handleDialogFlowResponse,
   handleDialogFlowAction,
   handleMessageAttachments,
   handleEcho,
-  greetUserText,
   setSessionandUser,
   sessionIds,
   usersMap

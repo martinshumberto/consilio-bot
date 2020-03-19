@@ -11,6 +11,12 @@ const config = {
 
 const sessionClient = new dialogflow.SessionsClient(config);
 
+/**
+ * Send all messages to DialogFlow
+ * @param {*} sender
+ * @param {*} textString
+ * @param {*} params
+ */
 const sendToDialogFlow = async (sender, textString, params) => {
   messagesHelper.sendTypingOn(sender);
 
@@ -45,6 +51,12 @@ const sendToDialogFlow = async (sender, textString, params) => {
   }
 };
 
+/**
+ * Process quick reply message
+ * @param {*} senderID
+ * @param {*} quickReply
+ * @param {*} messageId
+ */
 function handleQuickReply(senderID, quickReply, messageId) {
   var quickReplyPayload = quickReply.payload;
   console.log(
@@ -52,10 +64,14 @@ function handleQuickReply(senderID, quickReply, messageId) {
     messageId,
     quickReplyPayload
   );
-  //send payload to api.ai
+
   sendToDialogFlow(senderID, quickReplyPayload);
 }
 
+/**
+ * Received message
+ * @param {*} event
+ */
 const receivedMessage = event => {
   var senderID = event.sender.id;
   var recipientID = event.recipient.id;
@@ -64,7 +80,7 @@ const receivedMessage = event => {
 
   messagesHelper.setSessionandUser(senderID);
   console.log(
-    "Received message for user %d and page %d at %d with message:",
+    "⚡️ [BOT CONSILIO] Received message for user %d and page %d at %d with message:",
     senderID,
     recipientID,
     timeOfMessage
@@ -96,57 +112,29 @@ const receivedMessage = event => {
   }
 };
 
+/**
+ * Received post back
+ * @param {*} event
+ */
 function receivedPostback(event) {
   var senderID = event.sender.id;
   var recipientID = event.recipient.id;
   var timeOfPostback = event.timestamp;
 
-  messagesHelper.setSessionandUser(senderID);
-
   var payload = event.postback.payload;
 
   switch (payload) {
-    case "FACEBOOK_WELCOME":
-    case "GET_STARTED_PAYLOAD":
-    case "GET_STARTED":
-      sendTypingOn(senderID);
-      setTimeout(function() {
-        let quickReplies = [
-          {
-            content_type: "text",
-            payload: "book-table",
-            title: "Book a Table"
-          },
-          {
-            content_type: "text",
-            title: "Menu",
-            payload: "menu"
-          }
-        ];
-        messagesHelper.sendQuickReply(
-          senderID,
-          "What would you like to do next?",
-          quickReplies
-        );
-      }, 3000);
-      messagesHelper.greetUserText(senderID);
-      break;
-    case "CHAT":
-      messagesHelper.sendTextMessage(
-        senderID,
-        "I love chatting too. Do you have any other questions for me?"
-      );
-      break;
     default:
       messagesHelper.sendTextMessage(
         senderID,
-        "I'm not sure what you want. Can you be more specific?"
+        "Não tenho certeza do que você quer. Você pode ser mais específico?"
       );
       break;
   }
 
   console.log(
-    "Received postback for user %d and page %d with payload '%s' " + "at %d",
+    "⚡️ [BOT CONSILIO] Received postback for user %d and page %d with payload '%s' " +
+      "at %d",
     senderID,
     recipientID,
     payload,
@@ -154,6 +142,10 @@ function receivedPostback(event) {
   );
 }
 
+/**
+ * Received notification message read
+ * @param {*} event
+ */
 function receivedMessageRead(event) {
   var senderID = event.sender.id;
   var recipientID = event.recipient.id;
@@ -162,12 +154,17 @@ function receivedMessageRead(event) {
   var sequenceNumber = event.read.seq;
 
   console.log(
-    "Received message read event for watermark %d and sequence " + "number %d",
+    "⚡️ [BOT CONSILIO] Received message read event for watermark %d and sequence " +
+      "number %d",
     watermark,
     sequenceNumber
   );
 }
 
+/**
+ * Received notification authentication
+ * @param {*} event
+ */
 function receivedAuthentication(event) {
   var senderID = event.sender.id;
   var recipientID = event.recipient.id;
@@ -176,16 +173,23 @@ function receivedAuthentication(event) {
   var passThroughParam = event.optin.ref;
 
   console.log(
-    "Received authentication for user %d and page %d with pass " +
+    "⚡️ [BOT CONSILIO] Received authentication for user %d and page %d with pass " +
       "through param '%s' at %d",
     senderID,
     recipientID,
     passThroughParam,
     timeOfAuth
   );
-  messagesHelper.sendTextMessage(senderID, "Authentication successful");
+  messagesHelper.sendTextMessage(
+    senderID,
+    "Autenticação realizada com sucesso!"
+  );
 }
 
+/**
+ * Received account link
+ * @param {*} event
+ */
 function receivedAccountLink(event) {
   var senderID = event.sender.id;
   var recipientID = event.recipient.id;
@@ -194,7 +198,7 @@ function receivedAccountLink(event) {
   var authCode = event.account_linking.authorization_code;
 
   console.log(
-    "Received account link event with for user %d with status %s " +
+    "⚡️ [BOT CONSILIO] Received account link event with for user %d with status %s " +
       "and auth code %s ",
     senderID,
     status,
@@ -202,6 +206,10 @@ function receivedAccountLink(event) {
   );
 }
 
+/**
+ * Received devivery confirmation
+ * @param {*} event
+ */
 function receivedDeliveryConfirmation(event) {
   var senderID = event.sender.id;
   var recipientID = event.recipient.id;
@@ -213,13 +221,15 @@ function receivedDeliveryConfirmation(event) {
   if (messageIDs) {
     messageIDs.forEach(function(messageID) {
       console.log(
-        "Received delivery confirmation for message ID: %s",
+        "⚡️ [BOT CONSILIO] Received delivery confirmation for message ID: %s",
         messageID
       );
     });
   }
-
-  console.log("All message before %d were delivered.", watermark);
+  console.log(
+    "⚡️ [BOT CONSILIO] All message before %d were delivered.",
+    watermark
+  );
 }
 
 export default {
