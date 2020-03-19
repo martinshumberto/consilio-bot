@@ -1,13 +1,14 @@
-require("dotenv").config();
+"use strict";
 import request from "request";
+import config from "../config/variables";
 
 export default {
   addUser: function(callback, userId) {
     request(
       {
-        uri: "https://graph.facebook.com/v3.2/" + userId,
+        uri: `${config.mPlatfom}/${userId}`,
         qs: {
-          access_token: process.env.PAGE_ACCESS_TOKEN
+          access_token: config.PAGE_ACCESS_TOKEN
         }
       },
       function(error, response, body) {

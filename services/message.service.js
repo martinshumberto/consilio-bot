@@ -1,13 +1,14 @@
-require("dotenv").config();
+"use strict";
 import request from "request";
+import config from "../config/variables";
 
 export default {
-  sendCall: function(callback, userId) {
+  sendCall: function(callback) {
     request(
       {
-        uri: "https://graph.facebook.com/v3.2/me/messages",
+        uri: `${config.mPlatfom}/me/messages`,
         qs: {
-          access_token: process.env.PAGE_ACCESS_TOKEN
+          access_token: config.PAGE_ACCESS_TOKEN
         },
         method: "POST",
         json: callback
