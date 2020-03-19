@@ -177,7 +177,6 @@ function handleMessages(messages, sender) {
  * @param {*} sender
  */
 function handleMessage(message, sender) {
-  console.log("MESSAGE: ", message);
   switch (message.message) {
     case "text": //text
       message.text.text.forEach(text => {
