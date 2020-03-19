@@ -2,6 +2,7 @@ require("dotenv").config();
 const uuid = require("uuid");
 import userService from "../services/user.service";
 import messageService from "../services/message.service";
+import { struct } from "pb-util";
 
 /**
  * Send action typing on using the Service API.
@@ -176,6 +177,7 @@ function handleMessages(messages, sender) {
  * @param {*} sender
  */
 function handleMessage(message, sender) {
+  console.log("MESSAGE: ", message);
   switch (message.message) {
     case "text": //text
       message.text.text.forEach(text => {
@@ -198,6 +200,17 @@ function handleMessage(message, sender) {
       break;
     case "image": //image
       sendImageMessage(sender, message.image.imageUri);
+      break;
+    case "payload": //payload
+      const payload = struct.decode(message.payload);
+
+      let messageData = {
+        recipient: {
+          id: sender
+        },
+        message: payload.facebook
+      };
+      messageService.sendCall(messageData);
       break;
   }
 }
@@ -242,6 +255,14 @@ function handleDialogFlowResponse(sender, response) {
       handleMessages(messages, sender);
     }, delay);
   } else if (responseText == "" && !isDefined(action)) {
+    sendTypingOn(sender);
+    setTimeout(function() {
+      sendTypingOff(sender);
+      sendTextMessage(
+        sender,
+        "Não tenho certeza do que você quer. Você pode ser mais específico?"
+      );
+    }, delay);
   } else if (isDefined(responseText)) {
     sendTypingOn(sender);
     setTimeout(function() {
