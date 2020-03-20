@@ -2,14 +2,14 @@
 
 A Facebook Messenger bot integrated with Google's Dialogflow.
 
-## 🚀 Quick start
+## Quick start
 
 ```bash
-# First, install project dependencies:
+# Install dependencies:
 npm install
 # Copy environment file and change:
 cp .env.example .env
-# Finally, start the development server:
+# Start the dev server:
 npm start
 ```
 
