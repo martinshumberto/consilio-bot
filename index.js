@@ -12,14 +12,13 @@ import config from "./config/variables";
 import webhookRoutes from "./routes/webhook.route";
 import profileRoutes from "./routes/profile.route";
 
-config.checkEnv();
-
 const app = express()
   .use(bodyParser.json())
   .use(bodyParser.urlencoded({ extended: true }))
   .use(cors)
   .use(express.static(__dirname + "/static"));
 
+config.checkEnv();
 webhookRoutes(app);
 profileRoutes(app);
 
@@ -49,7 +48,7 @@ app.listen(config.PORT, () => {
 });
 
 /*
- ** View index
+ ** Base view
  */
 app.get("/", (req, res) => {
   res.send("⚡️[BOT CONSILIO] Hello world!");

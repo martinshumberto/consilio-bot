@@ -24,6 +24,7 @@ export default {
   PORT: process.env.PORT || 3000,
   PAGE_ID: process.env.PAGE_ID,
   APP_ID: process.env.APP_ID,
+  APP_SECRET: process.env.APP_SECRET,
   PAGE_ACCESS_TOKEN: process.env.PAGE_ACCESS_TOKEN,
   VERIFY_TOKEN: process.env.VERIFY_TOKEN,
   DIALOGFLOW_CLIENT_EMAIL: process.env.DIALOGFLOW_CLIENT_EMAIL,
@@ -48,15 +49,15 @@ export default {
     return [
       {
         name: "Humberto Martins",
-        picture: `${this.APP_URL}/static/personas/humberto.jpg`
+        picture: `${this.APP_URL}/personas/humberto.png`
       },
       {
         name: "Paulo Savanas",
-        picture: `${this.APP_URL}/static/personas/paulo.jpg`
+        picture: `${this.APP_URL}/personas/paulo.png`
       },
       {
         name: "Gabriel Verde",
-        picture: `${this.APP_URL}/static/personas/gabriel.jpg`
+        picture: `${this.APP_URL}/personas/gabriel.png`
       }
     ];
   },
@@ -66,25 +67,25 @@ export default {
   },
 
   get personaBilling() {
-    let id = this.PERSONAS["Humberto"] || process.env.PERSONA_BILLING;
+    let id = this.PERSONAS["Humberto Martins"] || process.env.PERSONA_BILLING;
     return {
-      name: "Humberto",
+      name: "Humberto Martins",
       id: id
     };
   },
 
   get personaCommercial() {
-    let id = this.PERSONAS["Paulo"] || process.env.PERSONA_COMMERCIAL;
+    let id = this.PERSONAS["Paulo Savanas"] || process.env.PERSONA_COMMERCIAL;
     return {
-      name: "Paulo",
+      name: "Paulo Savanas",
       id: id
     };
   },
 
   get personaSupport() {
-    let id = this.PERSONAS["Gabriel"] || process.env.PERSONA_SUPPORT;
+    let id = this.PERSONAS["Gabriel Verde"] || process.env.PERSONA_SUPPORT;
     return {
-      name: "Gabriel",
+      name: "Gabriel Verde",
       id: id
     };
   },
