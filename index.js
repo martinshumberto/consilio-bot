@@ -9,8 +9,8 @@ import bodyParser from "body-parser";
 
 import cors from "./config/cors";
 import config from "./config/variables";
-import webhookRoutes from "./routes/webhook.route";
-import profileRoutes from "./routes/profile.route";
+import webhookRoutes from "./routes/webhook";
+import profileRoutes from "./routes/profile";
 
 const app = express()
   .use(bodyParser.json())
