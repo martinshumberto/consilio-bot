@@ -297,7 +297,7 @@ function receivedPostback(event) {
 
   switch (payload) {
     case "get_started":
-      send.sendTextMessage(senderID, payload);
+      send.sendToDialogFlow(senderID, payload);
       break;
     case "view_site":
       send.sendTextMessage(senderID, payload);
